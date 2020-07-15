@@ -1,0 +1,50 @@
+{
+  "name": "codeartifact-helper",
+  "version": "0.1.0",
+  "description": "CodeArtifact Helper",
+  "author": "Kengo Nakatsuka <kengo.nakatsuka@gmail.com>",
+  "bin": {
+    "codeartifact-helper": "bin/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/nak2k/node-codeartifact-helper/issues"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.713.0",
+    "yargs": "^15.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.23",
+    "@types/npm": "^2.0.31",
+    "@types/yargs": "^15.0.5",
+    "chalk": "^4.1.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "typescript": "^3.9.6"
+  },
+  "homepage": "https://github.com/nak2k/node-codeartifact-helper",
+  "keywords": [
+    "aws",
+    "codeartifact"
+  ],
+  "license": "MIT",
+  "main": "lib",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nak2k/node-codeartifact-helper.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "prepublishOnly": "run-s test",
+    "postpublish": "npm-sns",
+    "pretest": "run-s clean build",
+    "test": "./bin/cli login",
+    "watch": "tsc -w"
+  },
+  "files": [
+    "README.md",
+    "bin/",
+    "lib/"
+  ]
+}
