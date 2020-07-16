@@ -1,6 +1,9 @@
-import * as npm from 'npm';
+import type * as NPM from 'npm';
 
-type NPMConfig = typeof npm.config;
+type NPMStatic = typeof NPM;
+type NPMConfig = typeof NPM.config;
+
+const npm = require('current-npm') as NPMStatic;
 
 export async function npmLoad() {
   await new Promise<NPMConfig>((resolve, reject) => {
