@@ -1,5 +1,6 @@
 import { Argv } from 'yargs';
 import { CodeArtifact } from 'aws-sdk';
+import proxy from 'proxy-agent';
 import { exitOnError } from '../exitOnError';
 import { createLogger } from '../logger';
 import { npmLoad, npmConfigSet } from '../npmConfig';
@@ -24,7 +25,11 @@ async function login(options: { dryRun: boolean }) {
 
   await npmLoad();
 
-  const codeartifact = new CodeArtifact();
+  const codeartifact = new CodeArtifact({
+    httpOptions: {
+      agent: proxy(),
+    },
+  });
 
   const listRepositoriesResult = await codeartifact.listRepositories().promise();
   if (!listRepositoriesResult.repositories) {
