@@ -3,7 +3,7 @@ import { CodeArtifact } from 'aws-sdk';
 import proxy from 'proxy-agent';
 import { exitOnError } from '../exitOnError';
 import { createLogger } from '../logger';
-import { npmLoad, npmConfigSet } from '../npmConfig';
+import { execSync } from "child_process";
 
 export const command = 'login';
 
@@ -22,8 +22,6 @@ async function login(options: { dryRun: boolean }) {
   } = options;
 
   const logger = createLogger(options);
-
-  await npmLoad();
 
   const codeartifact = new CodeArtifact({
     httpOptions: {
@@ -73,13 +71,13 @@ async function login(options: { dryRun: boolean }) {
     const authTokenKey = `${path}:_authToken`;
     const authTokenValue = `${token}`;
 
-    logger.info(`npm config set ${registryKey} ${registryValue}`);
-    dryRun || await npmConfigSet(registryKey, registryValue);
-
-    logger.info(`npm config set ${alwaysAuthKey} ${alwaysAuthValue}`);
-    dryRun || await npmConfigSet(alwaysAuthKey, alwaysAuthValue);
-
-    logger.info(`npm config set ${authTokenKey} *****`);
-    dryRun || await npmConfigSet(authTokenKey, authTokenValue);
+    const command = `npm config set ${registryKey}=${registryValue} ${alwaysAuthKey}=${alwaysAuthValue} ${authTokenKey}=$AUTH_TOKEN_VALUE`;
+    logger.info(command);
+    dryRun || execSync(command, {
+      env: {
+        ...process.env,
+        AUTH_TOKEN_VALUE: authTokenValue,
+      },
+    });
   }
 }

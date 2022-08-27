@@ -3,7 +3,7 @@ import { CodeArtifact } from 'aws-sdk';
 import proxy from 'proxy-agent';
 import { exitOnError } from '../exitOnError';
 import { createLogger } from '../logger';
-import { npmLoad, npmConfigDelete } from '../npmConfig';
+import { execSync } from "child_process";
 
 export const command = 'logout';
 
@@ -22,8 +22,6 @@ async function logout(options: { dryRun: boolean }) {
   } = options;
 
   const logger = createLogger(options);
-
-  await npmLoad();
 
   const codeartifact = new CodeArtifact({
     httpOptions: {
@@ -51,13 +49,8 @@ async function logout(options: { dryRun: boolean }) {
     const alwaysAuthKey = `${path}:always-auth`;
     const authTokenKey = `${path}:_authToken`;
 
-    logger.info(`npm config delete ${registryKey}`);
-    dryRun || await npmConfigDelete(registryKey);
-
-    logger.info(`npm config delete ${alwaysAuthKey}`);
-    dryRun || await npmConfigDelete(alwaysAuthKey);
-
-    logger.info(`npm config delete ${authTokenKey}`);
-    dryRun || await npmConfigDelete(authTokenKey);
+    const command = `npm config delete ${registryKey} ${alwaysAuthKey} ${authTokenKey}`;
+    logger.info(command);
+    dryRun || execSync(command);
   }
 }
