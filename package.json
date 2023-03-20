@@ -1,6 +1,6 @@
 {
   "name": "codeartifact-helper",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "CodeArtifact Helper",
   "author": "Kengo Nakatsuka <kengo.nakatsuka@gmail.com>",
   "bin": {
