@@ -1,6 +1,6 @@
 import { Argv } from 'yargs';
-import { CodeArtifact } from 'aws-sdk';
-import proxy from 'proxy-agent';
+import { CodeartifactClient, ListRepositoriesCommand } from "@aws-sdk/client-codeartifact";
+import { addProxyToClient } from 'aws-sdk-v3-proxy';
 import { exitOnError } from '../exitOnError';
 import { createLogger } from '../logger';
 import { execSync } from "child_process";
@@ -23,13 +23,9 @@ async function logout(options: { dryRun: boolean }) {
 
   const logger = createLogger(options);
 
-  const codeartifact = new CodeArtifact({
-    httpOptions: {
-      agent: proxy(),
-    },
-  });
+  const codeartifact = addProxyToClient(new CodeartifactClient({}), { throwOnNoProxy: false });
 
-  const listRepositoriesResult = await codeartifact.listRepositories().promise();
+  const listRepositoriesResult = await codeartifact.send(new ListRepositoriesCommand({}));
   if (!listRepositoriesResult.repositories) {
     return;
   }
@@ -41,7 +37,7 @@ async function logout(options: { dryRun: boolean }) {
       throw new Error('Invalid repository');
     }
 
-    const region = codeartifact.config.region;
+    const region = await codeartifact.config.region();
 
     const path = `//${domainName}-${domainOwner}.d.codeartifact.${region}.amazonaws.com/npm/${name}/`;
 

@@ -1,6 +1,6 @@
 import { Argv } from 'yargs';
-import { CodeArtifact } from 'aws-sdk';
-import proxy from 'proxy-agent';
+import { CodeartifactClient, GetAuthorizationTokenCommand, ListRepositoriesCommand } from "@aws-sdk/client-codeartifact";
+import { addProxyToClient } from 'aws-sdk-v3-proxy';
 import { exitOnError } from '../exitOnError';
 import { createLogger } from '../logger';
 import { execSync } from "child_process";
@@ -23,13 +23,9 @@ async function login(options: { dryRun: boolean }) {
 
   const logger = createLogger(options);
 
-  const codeartifact = new CodeArtifact({
-    httpOptions: {
-      agent: proxy(),
-    },
-  });
+  const codeartifact = addProxyToClient(new CodeartifactClient({}), { throwOnNoProxy: false });
 
-  const listRepositoriesResult = await codeartifact.listRepositories().promise();
+  const listRepositoriesResult = await codeartifact.send(new ListRepositoriesCommand({}));
   if (!listRepositoriesResult.repositories) {
     return;
   }
@@ -41,9 +37,9 @@ async function login(options: { dryRun: boolean }) {
       return tokens[domain];
     }
 
-    const { authorizationToken } = await codeartifact.getAuthorizationToken({
-      domain
-    }).promise();
+    const { authorizationToken } = await codeartifact.send(new GetAuthorizationTokenCommand({
+      domain,
+    }));
 
     if (!authorizationToken) {
       throw new Error('getAuthorizationToken() failed');
@@ -60,18 +56,16 @@ async function login(options: { dryRun: boolean }) {
     }
 
     const token = await getToken(domainName);
-    const region = codeartifact.config.region;
+    const region = await codeartifact.config.region();
 
     const path = `//${domainName}-${domainOwner}.d.codeartifact.${region}.amazonaws.com/npm/${name}/`;
 
     const registryKey = `@${name}:registry`;
     const registryValue = `https:${path}`;
-    const alwaysAuthKey = `${path}:always-auth`;
-    const alwaysAuthValue = `true`;
     const authTokenKey = `${path}:_authToken`;
     const authTokenValue = `${token}`;
 
-    const command = `npm config set ${registryKey}=${registryValue} ${alwaysAuthKey}=${alwaysAuthValue} ${authTokenKey}=$AUTH_TOKEN_VALUE`;
+    const command = `npm config set ${registryKey}=${registryValue} ${authTokenKey}=$AUTH_TOKEN_VALUE`;
     logger.info(command);
     dryRun || execSync(command, {
       env: {
