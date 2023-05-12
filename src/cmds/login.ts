@@ -65,13 +65,8 @@ async function login(options: { dryRun: boolean }) {
     const authTokenKey = `${path}:_authToken`;
     const authTokenValue = `${token}`;
 
-    const command = `npm config set ${registryKey}=${registryValue} ${authTokenKey}=$AUTH_TOKEN_VALUE`;
+    const command = `npm config set ${registryKey}=${registryValue} ${authTokenKey}=*****`;
     logger.info(command);
-    dryRun || execSync(command, {
-      env: {
-        ...process.env,
-        AUTH_TOKEN_VALUE: authTokenValue,
-      },
-    });
+    dryRun || execSync(command.replace("*****", authTokenValue));
   }
 }
